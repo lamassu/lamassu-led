@@ -22,6 +22,12 @@ enum color_type
 	COLOR_DUMMY_END
 };
 
+struct led_color  {
+	uint8_t r, g, b, a;
+};
+
+typedef struct led_color led_color;
+
 struct color
 {
 	uint8_t type, extra;
@@ -44,4 +50,7 @@ struct color
 	};
 };
 
+typedef struct color color;
+
 void color_HSL_to_RGB(struct color *c);
+void color_RGB_to_HSL(struct color *c);

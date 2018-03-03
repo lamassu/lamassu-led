@@ -71,3 +71,44 @@ void color_HSL_to_RGB (struct color *c) {
 
 	c->RGB.R = L; c->RGB.G = L; c->RGB.B = L;
 }
+
+void color_RGB_to_HSL(struct color *c) {
+	double R, G, B, min, max, delta, L;
+
+	assert(c != NULL);
+	assert(c->type == COLOR_RGB);
+
+	R = c->RGB.R;
+	G = c->RGB.G;
+	B = c->RGB.B;
+
+	min = R < G ? R : G;
+	if(B < min) min = B;
+
+	max = R > G ? R : G;
+	if(B > max) max = B;
+
+	delta = max - min;
+
+	L = (max + min) * 0.5;
+
+	c->HSL.L = L;
+	c->type = COLOR_HSL;
+
+	if(fabs(delta) > 0.0)
+	{
+		c->HSL.S =
+			L < 0.5 ? delta / (max + min) :
+			delta / (2.0 - max - min);
+
+		c->HSL.H =
+			max == R ? (G - B) / delta :
+			max == G ? (B - R) / delta + 2.0 :
+			(R - G) / delta + 4.0;
+
+		return;
+	}
+
+	c->HSL.S = 0.0;
+	c->HSL.H = 0.0;
+}
