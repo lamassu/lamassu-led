@@ -37,7 +37,7 @@ int main (int argc, char **argv) {
   pulse_color.HSL.S = 0.84;
   pulse_color.HSL.L = 0.53;
 
-  StartPulse(&pulse_color);
+  StartPulse(&pulse_color, 2, 5);
 
   while (1)
     pause();
@@ -46,8 +46,8 @@ int main (int argc, char **argv) {
 static void Handler (void) {
   static int count = 0;
 
-  led_color frame_color;
-  FrameUpdate(&frame_color);
+  unsigned char frame[26*4];
+  FrameUpdate(frame);
 
   count++;
 
@@ -60,8 +60,12 @@ static void Handler (void) {
     pulse_color.HSL.S = 0.84;
     pulse_color.HSL.L = 0.53;
 
-    StartPulse(&pulse_color);
+    StartPulse(&pulse_color, 2, 5);
   }
 
-  printf("#%.2x%.2x%.2x%.2x\n", frame_color.r, frame_color.g, frame_color.b, frame_color.a);
+  for (int i = 0; i < 26; i++) {
+    printf("#%.2x%.2x%.2x%.2x\n", frame[i*4], frame[i*4+1], frame[i*4+2], frame[i*4+3]);
+  }
+
+  printf("\n");
 }

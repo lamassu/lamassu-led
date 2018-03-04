@@ -23,7 +23,7 @@ enum color_type
 };
 
 struct led_color  {
-	uint8_t r, g, b, a;
+	unsigned char r, g, b, a;
 };
 
 typedef struct led_color led_color;

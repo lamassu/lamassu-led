@@ -1,11 +1,13 @@
 #include <sys/time.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "pulse.h"
 
 struct timeval pulse_start_time, transition_start_time;
 color color_a = {COLOR_NONE}, color_b = {COLOR_NONE};
 color color_a_rgb = {COLOR_NONE}, color_b_rgb = {COLOR_NONE};
+int range_first_led, range_last_led;
 
 const int kSecond = 1000000;
 const int kPulsePeriod = 4 * kSecond;
@@ -134,7 +136,10 @@ static void ComputePulse(struct timeval *t1, led_color *led_color) {
   }
 }
 
-void StartPulse(color *new_color) {
+void StartPulse(color *new_color, int first_led, int last_led) {
+  range_first_led = first_led;
+  range_last_led = last_led;
+
   if (color_a.type == COLOR_NONE) {
     SetColorA(new_color);
     gettimeofday(&pulse_start_time, NULL);
@@ -144,9 +149,24 @@ void StartPulse(color *new_color) {
   }
 }
 
-void FrameUpdate(led_color *ledColor) {
+void FrameUpdate(unsigned char leds_buf[]) {
+  const int kNumLeds = 26;
   struct timeval t1, elapsedPulse, elapsedTransition;
+  led_color pulse_color;
+  int leds_buf_size = kNumLeds * 4;
 
   gettimeofday(&t1, NULL);
-  ComputePulse(&t1, ledColor);
+  ComputePulse(&t1, &pulse_color);
+
+  static const unsigned char off_buf[4] = {0x0, 0x0, 0x0, 0x0};
+  const unsigned char color_buf[4] = {pulse_color.r, pulse_color.g, pulse_color.b, pulse_color.a};
+
+  for (int i = 0; i < kNumLeds; i++) {
+    int offset = i * 4;
+    if (i < range_first_led || i > range_last_led) {
+      memcpy(leds_buf + offset, off_buf, 4);
+    } else {
+      memcpy(leds_buf + offset, color_buf, 4);
+    }
+  }
 }

@@ -1,4 +1,4 @@
 #include "color.h"
 
-void StartPulse(color *new_color);
-void FrameUpdate(led_color *ledColor);
+void StartPulse(color *new_color, int first_led, int last_led);
+void FrameUpdate(unsigned char leds_buf[]);
