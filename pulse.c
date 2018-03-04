@@ -7,7 +7,7 @@
 struct timeval pulse_start_time, transition_start_time;
 color color_a = {COLOR_NONE}, color_b = {COLOR_NONE};
 color color_a_rgb = {COLOR_NONE}, color_b_rgb = {COLOR_NONE};
-int range_first_led, range_last_led;
+int range_first_led = -1, range_last_led = -1;
 
 const int kSecond = 1000000;
 const int kPulsePeriod = 4 * kSecond;
@@ -18,15 +18,22 @@ const int kTransitionPeriod = kSecond / 2;
 
 const led_color kOffLedColor = {0, 0, 0, 0};
 
+static void CreateRGB(unsigned char r, unsigned char g, unsigned char b, color *c) {
+  c->type = COLOR_RGB;
+  c->RGB.R = (double)r / 0xff;
+  c->RGB.G = (double)g / 0xff;
+  c->RGB.B = (double)b / 0xff;
+}
+
 static void SetColorA(color *c) {
   color_a = *c;
-  color_a_rgb = color_a;
+  color_a_rgb = *c;
   color_HSL_to_RGB(&color_a_rgb);
 }
 
 static void SetColorB(color *c) {
   color_b = *c;
-  color_b_rgb = color_b;
+  color_b_rgb = *c;
   color_HSL_to_RGB(&color_b_rgb);
 }
 
@@ -102,6 +109,11 @@ static void ComputeColor(float pulse_fraction, float transition_fraction, led_co
 
 static void ComputePulse(struct timeval *t1, led_color *led_color) {
   struct timeval result;
+
+  if (color_a.type == COLOR_NONE) {
+    return;
+  }
+
   TimevalSubtract(&result, t1, &pulse_start_time);
   long micros = result.tv_sec * 1000000 + result.tv_usec;
   long period = micros % kPulsePeriod;
@@ -136,15 +148,19 @@ static void ComputePulse(struct timeval *t1, led_color *led_color) {
   }
 }
 
-void StartPulse(color *new_color, int first_led, int last_led) {
+void StartPulse(unsigned char r, unsigned char g, unsigned char b, unsigned char first_led, unsigned char last_led) {
   range_first_led = first_led;
   range_last_led = last_led;
 
+  color new_color;
+  CreateRGB(r, g, b, &new_color);
+  color_RGB_to_HSL(&new_color);
+
   if (color_a.type == COLOR_NONE) {
-    SetColorA(new_color);
+    SetColorA(&new_color);
     gettimeofday(&pulse_start_time, NULL);
   } else {
-    SetColorB(new_color);
+    SetColorB(&new_color);
     gettimeofday(&transition_start_time, NULL);
   }
 }

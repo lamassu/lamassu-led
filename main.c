@@ -8,12 +8,16 @@
 #include "pulse.h"
 
 static void Handler (void);
+static void ProcessCommand(void);
 
 int main (int argc, char **argv) {
   struct itimerval timer;
 
   struct sched_param priority;
   priority.sched_priority = 10;
+
+  setvbuf(stdin, NULL, _IOLBF, 256);
+  setvbuf(stdout, NULL, _IOLBF, 256);
 
   // sched_setscheduler(0, SCHED_FIFO, &priority);
 
@@ -31,37 +35,33 @@ int main (int argc, char **argv) {
     exit(1);
   }
 
-  color pulse_color;
-  pulse_color.type = COLOR_HSL;
-  pulse_color.HSL.H = 4.9833;
-  pulse_color.HSL.S = 0.84;
-  pulse_color.HSL.L = 0.53;
+  while (1) {
+    ProcessCommand();
+  }
+}
 
-  StartPulse(&pulse_color, 2, 5);
+static const unsigned int kStartPulse = 0x0;
 
-  while (1)
-    pause();
+static void ProcessCommand(void) {
+  char *line_ptr = NULL;
+  size_t n = 0;
+
+  unsigned int cmd, start_led, end_led, r, g, b;
+
+  int res = scanf("%2x%2x%2x%2x%2x%2x", &cmd, &start_led, &end_led, &r, &g, &b);
+
+  if (res != 6) return;
+
+  switch (cmd) {
+    case kStartPulse:
+      StartPulse(r, g, b, start_led, end_led);
+      break;
+  }
 }
 
 static void Handler (void) {
-  static int count = 0;
-
   unsigned char frame[26*4];
   FrameUpdate(frame);
-
-  count++;
-
-  if (count == 3) {
-    printf("transition color\n");
-
-    color pulse_color;
-    pulse_color.type = COLOR_HSL;
-    pulse_color.HSL.H = 3.10000;
-    pulse_color.HSL.S = 0.84;
-    pulse_color.HSL.L = 0.53;
-
-    StartPulse(&pulse_color, 2, 5);
-  }
 
   for (int i = 0; i < 26; i++) {
     printf("#%.2x%.2x%.2x%.2x\n", frame[i*4], frame[i*4+1], frame[i*4+2], frame[i*4+3]);

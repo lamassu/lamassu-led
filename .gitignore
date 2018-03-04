@@ -54,3 +54,4 @@ dkms.conf
 *.tgz
 .vscode
 build
+scratch
