@@ -56,7 +56,8 @@ void OpenSpi(const char *spi_dev) {
 		pabort("can't get max speed hz", 2);
 }
 
-void Light(uint8_t r, uint8_t g, uint8_t b, uint8_t a, unsigned char leds_buf[]) {
+void Light(unsigned char leds_buf[]) {
+	const int kNumLeds = 26;
   const int leds_buf_size = kNumLeds * 4 + 8;
 
   unsigned char wr_buf[leds_buf_size];
@@ -65,13 +66,13 @@ void Light(uint8_t r, uint8_t g, uint8_t b, uint8_t a, unsigned char leds_buf[])
 
   memcpy(wr_buf, start_buf, 4);
   int end_offset = 4 + kNumLeds * 4;
+	memcpy(wr_buf + 4, leds_buf, kNumLeds * 4);
   memcpy(wr_buf + end_offset, end_buf, 4);
+
+	printf("%02x%02x%02x%02x\n", wr_buf[4], wr_buf[5], wr_buf[6], wr_buf[7]);
+	printf("\n");
 
 	if (write(fd, wr_buf, ARRAY_SIZE(wr_buf)) != ARRAY_SIZE(wr_buf)) {
 		perror("Write Error");
 	}
-}
-
-int main (int argc, char **argv) {
-	OpenSpi("/dev/spi");
 }

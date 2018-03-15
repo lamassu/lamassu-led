@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdint.h>
 
 enum color_type
 {

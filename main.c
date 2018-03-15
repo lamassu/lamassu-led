@@ -6,6 +6,9 @@
 #include <unistd.h>
 
 #include "pulse.h"
+#include "spi.h"
+
+#define kStartPulse 0x0
 
 static void Handler (void);
 static void ProcessCommand(void);
@@ -19,7 +22,8 @@ int main (int argc, char **argv) {
   setvbuf(stdin, NULL, _IOLBF, 256);
   setvbuf(stdout, NULL, _IOLBF, 256);
 
-  // sched_setscheduler(0, SCHED_FIFO, &priority);
+  sched_setscheduler(0, SCHED_FIFO, &priority);
+  OpenSpi("/dev/spidev1.0");
 
   if (signal(SIGALRM, (void (*)(int)) Handler) == SIG_ERR) {
     perror("Unable to catch SIGALRM");
@@ -35,12 +39,12 @@ int main (int argc, char **argv) {
     exit(1);
   }
 
+  // StartPulse(0xff, 0x0, 0x0, 0x0, 0x10);
+
   while (1) {
     ProcessCommand();
   }
 }
-
-static const unsigned int kStartPulse = 0x0;
 
 static void ProcessCommand(void) {
   char *line_ptr = NULL;
@@ -62,8 +66,9 @@ static void ProcessCommand(void) {
 static void Handler (void) {
   unsigned char frame[26*4];
   FrameUpdate(frame);
+  Light(frame);
 
-  for (int i = 0; i < 26; i++) {
+ for (int i = 0; i < 26; i++) {
     printf("#%.2x%.2x%.2x%.2x\n", frame[i*4], frame[i*4+1], frame[i*4+2], frame[i*4+3]);
   }
 

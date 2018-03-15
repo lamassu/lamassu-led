@@ -4,16 +4,17 @@
 
 #include "pulse.h"
 
+#define kSecond 1000000
+
 struct timeval pulse_start_time, transition_start_time;
 color color_a = {COLOR_NONE}, color_b = {COLOR_NONE};
 color color_a_rgb = {COLOR_NONE}, color_b_rgb = {COLOR_NONE};
 int range_first_led = -1, range_last_led = -1;
 
-const int kSecond = 1000000;
-const int kPulsePeriod = 4 * kSecond;
-const int kFadePeriod = 1 * kSecond;
-const int kSolidPeriod = 1 * kSecond;
-const int kOffPeriod = 1 * kSecond;
+const int kPulsePeriod = 1 * kSecond;
+const int kFadePeriod = kSecond / 8;
+const int kSolidPeriod = kSecond / 4;
+const int kOffPeriod = kSecond / 2;
 const int kTransitionPeriod = kSecond / 2;
 
 const led_color kOffLedColor = {0, 0, 0, 0};
@@ -152,6 +153,8 @@ void StartPulse(unsigned char r, unsigned char g, unsigned char b, unsigned char
   range_first_led = first_led;
   range_last_led = last_led;
 
+  printf("Starting pulse\n");
+
   color new_color;
   CreateRGB(r, g, b, &new_color);
   color_RGB_to_HSL(&new_color);
@@ -174,8 +177,9 @@ void FrameUpdate(unsigned char leds_buf[]) {
   gettimeofday(&t1, NULL);
   ComputePulse(&t1, &pulse_color);
 
-  static const unsigned char off_buf[4] = {0x0, 0x0, 0x0, 0x0};
-  const unsigned char color_buf[4] = {pulse_color.r, pulse_color.g, pulse_color.b, pulse_color.a};
+  static const unsigned char off_buf[4] = {0xe0, 0x0, 0x0, 0x0};
+  const unsigned char brightness = 0xe0 | (unsigned char)(((float)pulse_color.a / 255) * 31);
+  const unsigned char color_buf[4] = {brightness, pulse_color.b, pulse_color.g, pulse_color.r};
 
   for (int i = 0; i < kNumLeds; i++) {
     int offset = i * 4;
