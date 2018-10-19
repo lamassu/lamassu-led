@@ -10,8 +10,10 @@
 
 #define kStartPulse 0x0
 
-static void Handler (void);
+static void Handler (int signal);
 static void ProcessCommand(void);
+
+int dry_run = 0;
 
 int main (int argc, char **argv) {
   struct itimerval timer;
@@ -22,11 +24,23 @@ int main (int argc, char **argv) {
   setvbuf(stdin, NULL, _IOLBF, 256);
   setvbuf(stdout, NULL, _IOLBF, 256);
 
-  sched_setscheduler(0, SCHED_FIFO, &priority);
-  OpenSpi("/dev/spidev1.0");
+  if (argc == 2) {
+    dry_run = 1;
+  }
 
-  if (signal(SIGALRM, (void (*)(int)) Handler) == SIG_ERR) {
-    perror("Unable to catch SIGALRM");
+  printf("%d\n", argc);
+  sched_setscheduler(0, SCHED_FIFO, &priority);
+
+  if (!dry_run) {
+    OpenSpi("/dev/spidev1.0");
+  }
+
+  struct sigaction sa;
+  sa.sa_handler = Handler;
+  sigemptyset(&sa.sa_mask);
+
+  if (sigaction(SIGALRM, &sa, NULL) == -1) {
+    perror("sigaction failure");
     exit(1);
   }
 
@@ -39,36 +53,25 @@ int main (int argc, char **argv) {
     exit(1);
   }
 
-  // StartPulse(0xff, 0x0, 0x0, 0x0, 0x10);
+  StartPulse(0xff, 0x0, 0x0, 0x0, 0x30);
 
   while (1) {
-    ProcessCommand();
+    sleep(1);
   }
 }
 
-static void ProcessCommand(void) {
-  char *line_ptr = NULL;
-  size_t n = 0;
+int count = 0;
 
-  unsigned int cmd, start_led, end_led, r, g, b;
-
-  int res = scanf("%2x%2x%2x%2x%2x%2x", &cmd, &start_led, &end_led, &r, &g, &b);
-
-  if (res != 6) return;
-
-  switch (cmd) {
-    case kStartPulse:
-      StartPulse(r, g, b, start_led, end_led);
-      break;
-  }
-}
-
-static void Handler (void) {
+static void Handler (int signal) {
   unsigned char frame[26*4];
+  printf("DEBUG1: %d, %d\n", dry_run, count++);
   FrameUpdate(frame);
-  Light(frame);
 
- for (int i = 0; i < 26; i++) {
+  if (!dry_run) {
+    Light(frame);
+  }
+
+  for (int i = 0; i < 26; i++) {
     printf("#%.2x%.2x%.2x%.2x\n", frame[i*4], frame[i*4+1], frame[i*4+2], frame[i*4+3]);
   }
 
