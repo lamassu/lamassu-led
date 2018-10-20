@@ -17,6 +17,7 @@ static void ProcessCommand(void);
 static void RenderFrame(unsigned char *frame);
 
 int dry_run = 0;
+int exiting = 0;
 unsigned char pulse, r, g, b, start_led, end_led;
 
 int main (int argc, char **argv) {
@@ -99,15 +100,18 @@ int main (int argc, char **argv) {
 int count = 0;
 
 static void Handler (int signal) {
+  if (exiting) return;
   unsigned char frame[26*4];
   FrameUpdate(frame);
   RenderFrame(frame);
 }
 
 static void ExitHandler(int signal) {
+  exiting = 1;
   unsigned char frame[26*4];
   SolidFrame(0, 0, 0, 0, 26, frame);
   RenderFrame(frame);
+  // sleep(1);
   exit(0);
 }
 
