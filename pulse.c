@@ -16,6 +16,7 @@ const int kFadePeriod = kSecond / 8;
 const int kSolidPeriod = kSecond / 4;
 const int kOffPeriod = kSecond / 2;
 const int kTransitionPeriod = kSecond / 2;
+const int kNumLeds = 26;
 
 const led_color kOffLedColor = {0, 0, 0, 0};
 
@@ -153,8 +154,6 @@ void StartPulse(unsigned char r, unsigned char g, unsigned char b, unsigned char
   range_first_led = first_led;
   range_last_led = last_led;
 
-  printf("Starting pulse\n");
-
   color new_color;
   CreateRGB(r, g, b, &new_color);
   color_RGB_to_HSL(&new_color);
@@ -168,8 +167,21 @@ void StartPulse(unsigned char r, unsigned char g, unsigned char b, unsigned char
   }
 }
 
+void SolidFrame(unsigned char r, unsigned char g, unsigned char b, unsigned char first_led, unsigned char last_led, unsigned char leds_buf[]) {
+  const unsigned char color_buf[4] = {0xe0, b, g, r};
+  static const unsigned char off_buf[4] = {0xe0, 0x0, 0x0, 0x0};
+
+  for (int i = 0; i < kNumLeds; i++) {
+    int offset = i * 4;
+    if (i < first_led || i > last_led) {
+      memcpy(leds_buf + offset, off_buf, 4);
+    } else {
+      memcpy(leds_buf + offset, color_buf, 4);
+    }
+  }
+}
+
 void FrameUpdate(unsigned char leds_buf[]) {
-  const int kNumLeds = 26;
   struct timeval t1, elapsedPulse, elapsedTransition;
   led_color pulse_color;
   int leds_buf_size = kNumLeds * 4;
