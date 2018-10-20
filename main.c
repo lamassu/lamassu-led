@@ -100,7 +100,6 @@ int main (int argc, char **argv) {
 int count = 0;
 
 static void Handler (int signal) {
-  if (exiting) return;
   unsigned char frame[26*4];
   FrameUpdate(frame);
   RenderFrame(frame);
@@ -108,14 +107,15 @@ static void Handler (int signal) {
 
 static void ExitHandler(int signal) {
   exiting = 1;
-  unsigned char frame[26*4];
-  SolidFrame(0, 0, 0, 0, 26, frame);
-  RenderFrame(frame);
-  // sleep(1);
-  exit(0);
 }
 
 static void RenderFrame(unsigned char *frame) {
+  int is_off = frame[start_led*4] == 0xe0 &&
+    frame[start_led*4 + 1] + frame[start_led*4 + 2] + frame[start_led*4 + 3] == 0x00;
+
+  int do_exit = exiting && is_off;
+
+  printf("DEBUG20: %d, %d\n", is_off, do_exit);
   if (!dry_run) {
     Light(frame);
   } else {
@@ -125,6 +125,9 @@ static void RenderFrame(unsigned char *frame) {
       printf("#%.2x%.2x%.2x\n", r, g, b);
     }
 
+    if (do_exit) printf("Exiting.\n");
     printf("\n");
   }
+
+  if (do_exit) exit(0);
 }
