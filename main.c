@@ -18,6 +18,7 @@ static void RenderFrame(unsigned char *frame);
 
 int dry_run = 0;
 int exiting = 0;
+
 unsigned char pulse, r, g, b, start_led, end_led;
 
 int main (int argc, char **argv) {
@@ -45,33 +46,33 @@ int main (int argc, char **argv) {
     exit(5);
   }
 
-  printf("%d\n", argc);
   sched_setscheduler(0, SCHED_FIFO, &priority);
 
   if (!dry_run) {
     OpenSpi("/dev/spidev1.0");
   }
 
+  struct sigaction sa;
+
+  sa.sa_handler = ExitHandler;
+  sigemptyset(&sa.sa_mask);
+
+  if (sigaction(SIGINT, &sa, NULL) == -1) {
+    perror("sigaction failure");
+    exit(1);
+  }
+
+  if (sigaction(SIGTERM, &sa, NULL) == -1) {
+    perror("sigaction failure");
+    exit(1);
+  }
+
   if (pulse) {
-    struct sigaction sa;
 
     sa.sa_handler = Handler;
     sigemptyset(&sa.sa_mask);
 
     if (sigaction(SIGALRM, &sa, NULL) == -1) {
-      perror("sigaction failure");
-      exit(1);
-    }
-
-    sa.sa_handler = ExitHandler;
-    sigemptyset(&sa.sa_mask);
-
-    if (sigaction(SIGINT, &sa, NULL) == -1) {
-      perror("sigaction failure");
-      exit(1);
-    }
-
-    if (sigaction(SIGTERM, &sa, NULL) == -1) {
       perror("sigaction failure");
       exit(1);
     }
@@ -107,6 +108,13 @@ static void Handler (int signal) {
 
 static void ExitHandler(int signal) {
   exiting = 1;
+
+  if (!pulse) {
+    unsigned char frame[26*4];
+    SolidFrame(0, 0, 0, start_led, end_led, frame);
+    RenderFrame(frame);
+    exit(0);
+  }
 }
 
 static void RenderFrame(unsigned char *frame) {
@@ -115,7 +123,6 @@ static void RenderFrame(unsigned char *frame) {
 
   int do_exit = exiting && is_off;
 
-  printf("DEBUG20: %d, %d\n", is_off, do_exit);
   if (!dry_run) {
     Light(frame);
   } else {

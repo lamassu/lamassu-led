@@ -168,7 +168,7 @@ void StartPulse(unsigned char r, unsigned char g, unsigned char b, unsigned char
 }
 
 void SolidFrame(unsigned char r, unsigned char g, unsigned char b, unsigned char first_led, unsigned char last_led, unsigned char leds_buf[]) {
-  const unsigned char color_buf[4] = {0xe0, b, g, r};
+  const unsigned char color_buf[4] = {0xff, b, g, r};
   static const unsigned char off_buf[4] = {0xe0, 0x0, 0x0, 0x0};
 
   for (int i = 0; i < kNumLeds; i++) {

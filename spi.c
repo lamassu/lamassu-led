@@ -69,9 +69,6 @@ void Light(unsigned char leds_buf[]) {
 	memcpy(wr_buf + 4, leds_buf, kNumLeds * 4);
   memcpy(wr_buf + end_offset, end_buf, 4);
 
-	printf("%02x%02x%02x%02x\n", wr_buf[4], wr_buf[5], wr_buf[6], wr_buf[7]);
-	printf("\n");
-
 	if (write(fd, wr_buf, ARRAY_SIZE(wr_buf)) != ARRAY_SIZE(wr_buf)) {
 		perror("Write Error");
 	}
