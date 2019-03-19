@@ -5,7 +5,7 @@
 
 static void finish_HSL_to_RGB(struct color *c, double h, double C, double m)
 {
-	static const char rgb_tbl[][3] =
+	static const int rgb_tbl[][3] =
 	{
 		{ 0, 2, 1 },
 		{ 2, 0, 1 },
@@ -43,9 +43,9 @@ static void finish_HSL_to_RGB(struct color *c, double h, double C, double m)
 	vars[1] = m;
 	vars[2] = C * h2 + m;
 
-	c->RGB.R = vars[(double)rgb_tbl[idx][0]];
-	c->RGB.G = vars[(double)rgb_tbl[idx][1]];
-	c->RGB.B = vars[(double)rgb_tbl[idx][2]];
+	c->RGB.R = vars[rgb_tbl[idx][0]];
+	c->RGB.G = vars[rgb_tbl[idx][1]];
+	c->RGB.B = vars[rgb_tbl[idx][2]];
 }
 
 void color_HSL_to_RGB (struct color *c) {
