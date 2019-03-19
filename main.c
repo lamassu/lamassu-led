@@ -3,6 +3,7 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <inttypes.h>
 
@@ -53,6 +54,7 @@ int main (int argc, char **argv) {
   }
 
   struct sigaction sa;
+  memset((void *) &sa, 0, sizeof(sa));
 
   sa.sa_handler = ExitHandler;
   sigemptyset(&sa.sa_mask);
