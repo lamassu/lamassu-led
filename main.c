@@ -10,7 +10,7 @@
 #include "spi.h"
 
 #define kStartPulse 0x0
-#define MAX_NUM_LEDS 26
+#define kNumLeds 26
 
 static void ExitHandler(int signal);
 static void RenderFrame(unsigned char *frame);
@@ -69,7 +69,7 @@ int main (int argc, char **argv) {
   if (pulse) {
     StartPulse(r, g, b, start_led, end_led);
 
-    uint8_t frame[MAX_NUM_LEDS * 4];
+    uint8_t frame[kNumLeds * 4];
     while (true) {
       FrameUpdate(frame);
       RenderFrame(frame);
@@ -78,7 +78,7 @@ int main (int argc, char **argv) {
 
   }
   else {
-    uint8_t frame[MAX_NUM_LEDS * 4];
+    uint8_t frame[kNumLeds * 4];
     SolidFrame(r, g, b, start_led, end_led, frame);
     RenderFrame(frame);
     pause();
