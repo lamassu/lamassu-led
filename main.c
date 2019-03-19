@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <sched.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -11,7 +12,6 @@
 #define kStartPulse 0x0
 #define MAX_NUM_LEDS 26
 
-static void Handler (int signal);
 static void ExitHandler(int signal);
 static void RenderFrame(unsigned char *frame);
 
