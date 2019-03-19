@@ -1,27 +1,26 @@
-#include <signal.h>
-#include <sys/time.h>
+#include <inttypes.h>
 #include <sched.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <inttypes.h>
 
 #include "pulse.h"
 #include "spi.h"
 
 #define kStartPulse 0x0
+#define MAX_NUM_LEDS 26
 
 static void Handler (int signal);
 static void ExitHandler(int signal);
 static void RenderFrame(unsigned char *frame);
 
 int dry_run = 0;
-int exiting = 0;
+volatile int exiting = 0;
 
-unsigned char pulse, r, g, b, start_led, end_led;
+uint8_t pulse, r, g, b, start_led, end_led;
 
 int main (int argc, char **argv) {
-  struct itimerval timer;
 
   struct sched_param priority;
   priority.sched_priority = 10;
@@ -68,49 +67,31 @@ int main (int argc, char **argv) {
   }
 
   if (pulse) {
-
-    sa.sa_handler = Handler;
-    sigemptyset(&sa.sa_mask);
-
-    if (sigaction(SIGALRM, &sa, NULL) == -1) {
-      perror("sigaction failure");
-      exit(1);
-    }
-
-    timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = 10000;
-    timer.it_interval = timer.it_value;
-
-    if (setitimer(ITIMER_REAL, &timer, NULL) == -1) {
-      perror("error calling setitimer()");
-      exit(1);
-    }
-
     StartPulse(r, g, b, start_led, end_led);
-  } else {
-    unsigned char frame[26*4];
+
+    uint8_t frame[MAX_NUM_LEDS * 4];
+    while (true) {
+      FrameUpdate(frame);
+      RenderFrame(frame);
+      usleep(10000);
+    }
+
+  }
+  else {
+    uint8_t frame[MAX_NUM_LEDS * 4];
     SolidFrame(r, g, b, start_led, end_led, frame);
     RenderFrame(frame);
-  }
-
-  while (1) {
     pause();
   }
 }
 
 int count = 0;
 
-static void Handler (int signal) {
-  unsigned char frame[26*4];
-  FrameUpdate(frame);
-  RenderFrame(frame);
-}
-
 static void ExitHandler(int signal) {
   exiting = 1;
 
   if (!pulse) {
-    unsigned char frame[26*4];
+    uint8_t frame[26*4];
     SolidFrame(0, 0, 0, start_led, end_led, frame);
     RenderFrame(frame);
     exit(0);
@@ -132,9 +113,12 @@ static void RenderFrame(unsigned char *frame) {
       printf("#%.2x%.2x%.2x\n", r, g, b);
     }
 
-    if (do_exit) printf("Exiting.\n");
+    if (do_exit)
+      printf("Exiting.\n");
+
     printf("\n");
   }
 
-  if (do_exit) exit(0);
+  if (do_exit)
+    exit(0);
 }
