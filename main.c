@@ -1,7 +1,6 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <sched.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -14,7 +13,6 @@
 
 static void Handler (int signal);
 static void ExitHandler(int signal);
-static void ProcessCommand(void);
 static void RenderFrame(unsigned char *frame);
 
 int dry_run = 0;
