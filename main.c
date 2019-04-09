@@ -13,7 +13,6 @@
 
 static void Handler (int signal);
 static void ExitHandler(int signal);
-static void ProcessCommand(void);
 static void RenderFrame(unsigned char *frame);
 
 int dry_run = 0;

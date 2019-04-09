@@ -182,9 +182,8 @@ void SolidFrame(unsigned char r, unsigned char g, unsigned char b, unsigned char
 }
 
 void FrameUpdate(unsigned char leds_buf[]) {
-  struct timeval t1, elapsedPulse, elapsedTransition;
+  struct timeval t1;
   led_color pulse_color;
-  int leds_buf_size = kNumLeds * 4;
 
   gettimeofday(&t1, NULL);
   ComputePulse(&t1, &pulse_color);
