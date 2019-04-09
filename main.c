@@ -11,6 +11,7 @@
 #include "spi.h"
 
 #define kStartPulse 0x0
+#define kNumLeds 26
 
 static void Handler (int signal);
 static void ExitHandler(int signal);
@@ -89,7 +90,7 @@ int main (int argc, char **argv) {
 
     StartPulse(r, g, b, start_led, end_led);
   } else {
-    unsigned char frame[26*4];
+    unsigned char frame[kNumLeds*4];
     SolidFrame(r, g, b, start_led, end_led, frame);
     RenderFrame(frame);
   }
