@@ -5,7 +5,7 @@
 
 static void finish_HSL_to_RGB(struct color *c, double h, double C, double m)
 {
-	static const char rgb_tbl[][3] =
+	static const int rgb_tbl[][3] =
 	{
 		{ 0, 2, 1 },
 		{ 2, 0, 1 },
